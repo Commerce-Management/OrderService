@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option csharp_namespace = "OrderService.Shared.Protos.GrpcShopService";
+package shop;
+
+service ShopService {
+  rpc GetShopById(GetShopByIdRequest) returns (GetShopByIdResponse);
+  rpc ValidateShopOwnership(ValidateShopOwnershipRequest) returns (ValidateShopOwnershipResponse);
+}
+
+message GetShopByIdRequest {
+  string shop_id = 1;
+}
+
+message GetShopByIdResponse {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  bool is_active = 4;
+}
+message ValidateShopOwnershipRequest {
+  string shop_id = 1;
+  string user_id = 2;
+}
+
+message ValidateShopOwnershipResponse {
+  bool is_owner = 1;
+  bool shop_exists = 2;
+  bool shop_is_active = 3;
+}
+
+
