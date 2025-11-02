@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -32,6 +33,20 @@ builder.Services.AddGrpcClient<ShopService.ShopServiceClient>(options =>
 {
     options.Address = new Uri(builder.Configuration["gRPC:ShopService"]); 
 });
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Any, 5012, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http1AndHttp2;
+    });
+    
+
+    options.Listen(IPAddress.Any, 5004, listenOptions =>
+    {
+        listenOptions.Protocols = Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols.Http2; 
+    });
+}); 
 
 
 builder.Services.AddCors(options =>
@@ -200,6 +215,7 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGrpcService<OrderService.Infrastructure.gRPC.GrpcOrderService>();
 app.MapControllers();
 
 app.Run();
