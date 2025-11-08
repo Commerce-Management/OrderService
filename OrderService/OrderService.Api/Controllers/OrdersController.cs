@@ -37,7 +37,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         return NotFound($"Orders not found");
     }
     
-    [HttpGet("user/{id:guid}")]
+    [HttpGet("user")]
     [Authorize]
     public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetAllUserOrders()
     {
