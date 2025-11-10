@@ -45,7 +45,7 @@ public class OrderService(
     public async Task<GetOrderDto?> GetOrderByTrackingNumberAsync(string trackingNumber) =>
         mapper.Map<GetOrderDto?>(await orderRepository.GetOrderByTrackingNumberAsync(trackingNumber));
 
-    public async Task<CreateOrderResponse> CreateOrderAsync(CreateOrderDto orderDto, PaymentRequestDto paymentRequest)
+    public async Task<CreateOrderResponse> CreateOrderAsync(CreateOrderDto orderDto, PaymentRequestDto paymentRequest, Guid userId)
     {
         var (orderSummary, productsById) = await ValidateAndSummarizeOrder(orderDto);
         Log.Information("Order summary calculated. TotalPrice: {TotalPrice}", orderSummary.TotalPrice);
@@ -53,7 +53,7 @@ public class OrderService(
         var trackingId = $"{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N").Substring(0, 6)}";
         Log.Information("Generated TrackingId: {TrackingId}", trackingId);
 
-        var savedOrder = await SaveOrder(orderDto, trackingId, productsById);
+        var savedOrder = await SaveOrder(orderDto, trackingId, productsById, userId);
         Log.Information("Order saved with Id: {OrderId} and TotalAmount: {TotalAmount}", savedOrder.Id,
             savedOrder.TotalAmount);
 
@@ -240,7 +240,7 @@ public class OrderService(
         return (orderSummary, productsById);
     }
 
-    private async Task<Order> SaveOrder(CreateOrderDto orderDto, string trackingId,  Dictionary<Guid, ProductBrief> productsById)
+    private async Task<Order> SaveOrder(CreateOrderDto orderDto, string trackingId,  Dictionary<Guid, ProductBrief> productsById, Guid userId)
     {
         // Log.Information("SaveOrder started for UserId: {UserId} with TrackingId: {TrackingId}", orderDto.UserId,
         //     trackingId);
@@ -248,6 +248,7 @@ public class OrderService(
         var orderEntity = mapper.Map<Order>(orderDto);
         orderEntity.TrackingId = trackingId;
         orderEntity.Status = OrderStatus.Pending;
+        orderEntity.UserId = userId;
 
         Order savedOrder = null;
 
