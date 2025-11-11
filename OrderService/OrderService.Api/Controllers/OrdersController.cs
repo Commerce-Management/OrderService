@@ -67,10 +67,14 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     {
         if (!ModelState.IsValid)
             return BadRequest(new { Error = "Model not valid" });
+        
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized();
     
         try
         {
-            var result = await orderService.CreateOrderAsync(request.Order,request.PaymentRequest);
+            var result = await orderService.CreateOrderAsync(request.Order,request.PaymentRequest, userId);
             return Ok(result);
         }
         catch (Exception ex) when (ex.Message == "PRODUCT_NOT_FOUND")
