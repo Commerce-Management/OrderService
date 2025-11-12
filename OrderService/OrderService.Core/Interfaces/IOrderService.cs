@@ -12,7 +12,7 @@ public interface IOrderService
     public Task<IEnumerable<GetOrderShopDto>> GetAllShopOrders(Guid shopId, int page, int limit);
     public Task<GetOrderDto?> GetOrderByIdAsync(Guid id);
     public Task<GetOrderDto?> GetOrderByTrackingNumberAsync(string trackingNumber);
-    public Task<CreateOrderResponse> CreateOrderAsync(CreateOrderDto orderDto, PaymentRequestDto paymentRequest);
+    public Task<CreateOrderResponse> CreateOrderAsync(CreateOrderDto orderDto, PaymentRequestDto paymentRequest, Guid userId);
     public Task CaptureOrderAsync(UserDto user, string trackingId, PaymentRequestDto paymentRequest);
     public Task<bool> UpdateOrderAsync(Guid id, CreateOrderDto orderDto);
     
