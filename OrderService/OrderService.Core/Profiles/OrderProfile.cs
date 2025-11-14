@@ -9,8 +9,10 @@ public class OrderProfile : Profile
 {
     public OrderProfile()
     {
-        CreateMap<CreateOrderDto, Order>();
+        CreateMap<CreateOrderDto, Order>()
+            .ForMember(dest => dest.UserId, opt => opt.Ignore());
+
         CreateMap<Order, GetOrderDto>();
-        CreateMap<OrderItem, GetOrderItemDto>();  
+        CreateMap<OrderItem, GetOrderItemDto>();
     }
 }
