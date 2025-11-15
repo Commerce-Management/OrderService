@@ -1,4 +1,7 @@
-﻿namespace OrderService.Infrastructure.Interfaces.Base;
+﻿using System;
+using System.Threading.Tasks;
+
+namespace OrderService.Infrastructure.Interfaces.Base;
 
 public interface IUnitOfWork
 {
