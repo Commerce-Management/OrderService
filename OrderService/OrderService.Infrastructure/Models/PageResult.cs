@@ -1,4 +1,6 @@
-﻿namespace OrderService.Infrastructure.Models;
+﻿using System.Collections.Generic;
+
+namespace OrderService.Infrastructure.Models;
 
 public class PageResult<T>
 {
