@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using OrderService.Core.Entities;
 using OrderService.Infrastructure.Context;
 using OrderService.Infrastructure.Interfaces.Entities;
