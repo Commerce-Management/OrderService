@@ -48,4 +48,17 @@ public class OrderRepository(OrderDbContext context) : Repository<Order>(context
         await Entities
             .Include(o => o.OrderItems)
             .FirstOrDefaultAsync(o => o.TrackingId == trackingNumber);
+    
+    
+    public async Task<Order?> GetOrderByProductIdAsync(Guid productId, Guid userId) =>
+        await Entities
+            .Include(o => o.OrderItems)
+            .Where(o =>
+                o.UserId == userId &&   
+                o.OrderItems.Any(i => i.ProductId == productId) &&
+                o.Status != OrderStatus.Cancelled &&
+                o.Status != OrderStatus.PaymentFailed)
+            .OrderByDescending(o => o.OrderDate)
+            .FirstOrDefaultAsync();
+
 }
