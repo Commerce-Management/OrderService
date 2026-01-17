@@ -6,6 +6,7 @@ package product;
 service ProductService {
   rpc GetProductsByIds (GetProductsByIdsRequest) returns (GetProductsByIdsResponse);
   rpc UpdateProductStock (UpdateProductStockRequest) returns (UpdateProductStockResponse);
+  rpc GetCandidateProductIdsByProdIdsFromReviews(GetCandidateProductIdsByProdIdsFromReviewsRequest) returns (GetCandidateProductIdsByProdIdsFromReviewsResponse);
 }
 
 message GetProductsByIdsRequest {
@@ -26,7 +27,7 @@ message ProductBrief {
 }
 
 message UpdateProductStockRequest {
-  repeated StockUpdate updates = 1; 
+  repeated StockUpdate updates = 1;
 }
 
 message StockUpdate {
@@ -36,4 +37,13 @@ message StockUpdate {
 
 message UpdateProductStockResponse {
   bool success = 1;
+}
+
+message GetCandidateProductIdsByProdIdsFromReviewsRequest {
+  repeated string product_ids_from_reviews = 1;
+}
+
+
+message GetCandidateProductIdsByProdIdsFromReviewsResponse {
+  repeated string product_ids_candidate = 1;
 }
