@@ -16,19 +16,19 @@ namespace OrderService.Controllers;
 
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
-    
+
     [HttpGet]
     [Authorize("SuperAdmin")]
-    public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetAllOrders()
+    public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetAllOrders([FromQuery] int page = 1, [FromQuery] int limit = 10)
     {
-        var result = await orderService.GetAllOrders();
+        var result = await orderService.GetAllOrders(page, limit);
         if (result.Any()) return Ok(result);
 
         return NotFound("Orders not found.");
     }
 
     [HttpGet("shop")]
-    [Authorize("ShopOwner")]
+    [Authorize("OwnerAndSuperAdmin")]
     public async Task<ActionResult<IEnumerable<GetOrderShopDto>>> GetShopOrders([FromQuery] Guid shopId, [FromQuery] int page = 1, [FromQuery] int limit = 10)
     {
         var result = await orderService.GetAllShopOrders(shopId, page, limit);
@@ -36,21 +36,58 @@ public class OrdersController(IOrderService orderService) : ControllerBase
 
         return NotFound($"Orders not found");
     }
-    
+
     [HttpGet("user")]
     [Authorize]
-    public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetAllUserOrders()
+    public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetAllUserOrders(
+        [FromQuery] int page = 1,
+        [FromQuery] int limit = 10)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             return Unauthorized();
-        
-        var result = await orderService.GetAllUserOrdersAsync(userId);
+
+        var result = await orderService.GetAllUserOrdersAsync(userId, page, limit);
         if (result.Any()) return Ok(result);
 
         return NotFound("Orders not found.");
     }
-    
+
+
+    [HttpGet("user/{userId:guid}")]
+    [Authorize("SuperAdmin")]
+    public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetOrdersByUserId(
+    Guid userId,
+    [FromQuery] int page = 1,
+    [FromQuery] int limit = 10)
+    {
+        if (page <= 0) page = 1;
+        if (limit <= 0) limit = 10;
+
+        try
+        {
+            var result = await orderService.GetAllUserOrdersAsync(userId, page, limit);
+
+            if (result == null || !result.Any())
+                return NotFound($"Orders for user with ID: {userId} not found.");
+
+            Response.Headers["X-Page"] = page.ToString();
+            Response.Headers["X-Page-Size"] = limit.ToString();
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Error while fetching orders by user id {UserId}", userId);
+            return StatusCode(500, new
+            {
+                Error = "An unexpected error occurred. Please try again later.",
+                Details = ex.Message
+            });
+        }
+    }
+
+
     [HttpGet("order/{id:guid}")]
     [Authorize("ShopOwner")]
     public async Task<ActionResult<IEnumerable<GetOrderDto>>> GetOrderById(Guid id)
@@ -58,23 +95,23 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         var result = await orderService.GetOrderByIdAsync(id);
         if (result != null) return Ok(result);
 
-        return NotFound($"Order with {result.Id} not found.");
+        return NotFound($"Order with ID: {id} not found.");
     }
-    
+
     [HttpPost]
     [Authorize("ShopCustomer")]
     public async Task<ActionResult<CreateOrderRequest>> CreateOrder([FromBody] CreateOrderRequest request)
     {
         if (!ModelState.IsValid)
             return BadRequest(new { Error = "Model not valid" });
-        
+
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             return Unauthorized();
-    
+
         try
         {
-            var result = await orderService.CreateOrderAsync(request.Order,request.PaymentRequest, userId);
+            var result = await orderService.CreateOrderAsync(request.Order, request.PaymentRequest, userId);
             return Ok(result);
         }
         catch (Exception ex) when (ex.Message == "PRODUCT_NOT_FOUND")
@@ -96,9 +133,9 @@ public class OrdersController(IOrderService orderService) : ControllerBase
             return StatusCode(500, new
             {
                 Error = "An unexpected error occurred. Please try again later.",
-                Details = ex.Message,  
+                Details = ex.Message,
                 InnerException = innerExceptionMessage,
-                StackTrace = ex.StackTrace 
+                StackTrace = ex.StackTrace
             });
         }
     }
@@ -117,17 +154,17 @@ public class OrdersController(IOrderService orderService) : ControllerBase
             Name: userNameClaim,   // если вдруг name отсутствует
             Email: userEmailClaim
         );
-        
+
         try
         {
-            await orderService.CaptureOrderAsync(userDto, trackingId,paymentRequest);
+            await orderService.CaptureOrderAsync(userDto, trackingId, paymentRequest);
             return Ok();
         }
-        catch(ArgumentException ex) when (ex.Message == "ORDER_NOT_FOUND")
+        catch (ArgumentException ex) when (ex.Message == "ORDER_NOT_FOUND")
         {
             return NotFound(new { Error = "Order not found" });
         }
-        catch(ArgumentException ex) when (ex.Message == "PRODUCT_NOT_FOUND")
+        catch (ArgumentException ex) when (ex.Message == "PRODUCT_NOT_FOUND")
         {
             return NotFound(new { Error = "Product not found" });
         }
@@ -145,13 +182,13 @@ public class OrdersController(IOrderService orderService) : ControllerBase
             return StatusCode(500, new
             {
                 Error = "An unexpected error occurred. Please try again later.",
-                Details = ex.Message, 
-                StackTrace = ex.StackTrace  
+                Details = ex.Message,
+                StackTrace = ex.StackTrace
             });
         }
     }
-    
-    
+
+
     [HttpPut("{id:guid}")]
     [Authorize]
     public async Task<ActionResult> UpdateOrder(Guid id, CreateOrderDto orderDto)
@@ -167,11 +204,11 @@ public class OrdersController(IOrderService orderService) : ControllerBase
 
     [HttpPut("status-update")]
     [Authorize]
-    public async Task<ActionResult> UpdateOrderStatus(UpdateOrderStatusDto updateOrderStatus)
+    public async Task<ActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusDto updateOrderStatus)
     {
         if (!ModelState.IsValid)
             return BadRequest("Model not valid");
-        
+
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var userNameClaim = User.FindFirst(ClaimTypes.Name)?.Value;
         var userEmailClaim = User.FindFirst(ClaimTypes.Email)?.Value;
@@ -183,13 +220,13 @@ public class OrdersController(IOrderService orderService) : ControllerBase
             Name: userNameClaim,   // если вдруг name отсутствует
             Email: userEmailClaim
         );
-        
+
         var result = await orderService.UpdateOrderStatusAsync(userDto, updateOrderStatus);
         if (result) return Ok();
-        
+
         return BadRequest($"Order status with Id: {updateOrderStatus.OrderId} could not be updated.");
     }
-    
+
     [HttpDelete("{id:guid}")]
     [Authorize]
     public async Task<ActionResult> DeleteOrder(Guid id)
@@ -199,7 +236,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
 
         return BadRequest($"Order with ID: {id} could not be deleted.");
     }
-    
+
     [HttpGet("tracking/{trackingId}")]
     public async Task<ActionResult<GetOrderDto>> GetOrderByTrackingNumber(string trackingId)
     {
@@ -207,6 +244,6 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         if (result != null) return Ok(result);
         return NotFound($"Order with tracking {trackingId} not found.");
     }
-    
-    
+
+
 }

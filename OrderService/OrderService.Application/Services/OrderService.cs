@@ -28,16 +28,23 @@ public class OrderService(
     IOrderConfirmationEmail orderConfirmationEmail
 ) : IOrderService
 {
-    public async Task<IEnumerable<GetOrderDto>> GetAllOrders() =>
-        mapper.Map<IEnumerable<GetOrderDto>>(await orderRepository.GetAllAsync());
-    
+    public async Task<IEnumerable<GetOrderDto>> GetAllOrders(int page, int limit) =>
+        mapper.Map<IEnumerable<GetOrderDto>>(await orderRepository.GetAllPaginatedAsync(page, limit));
+
+
     public async Task<IEnumerable<GetOrderShopDto>> GetAllShopOrders(Guid shopId, int page, int limit)
     {
-        return mapper.Map<IEnumerable<GetOrderShopDto>>(await orderRepository.GetAllShopOrdersAsync(shopId, page, limit));
+        var pageResult = await orderRepository.GetAllShopOrdersAsync(shopId, page, limit);
+        return mapper.Map<IEnumerable<GetOrderShopDto>>(pageResult.Items);
     }
 
-    public async Task<IEnumerable<GetOrderDto>> GetAllUserOrdersAsync(Guid userId) =>
-        mapper.Map<IEnumerable<GetOrderDto>>(await orderRepository.GetAllUserOrdersAsync(userId));
+
+    public async Task<IEnumerable<GetOrderDto>> GetAllUserOrdersAsync(Guid userId, int page, int limit)
+    {
+        var orders = await orderRepository.GetAllUserOrdersAsync(userId, page, limit);
+        return mapper.Map<IEnumerable<GetOrderDto>>(orders);
+    }
+
 
     public async Task<GetOrderDto?> GetOrderByIdAsync(Guid orderId) =>
         mapper.Map<GetOrderDto?>(await orderRepository.GetOrderByIdAsync(orderId));

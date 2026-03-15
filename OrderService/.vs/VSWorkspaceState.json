@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\OrderService.Api",
+    "\\OrderService.Api\\Controllers",
+    "\\OrderService.Infrastructure",
+    "\\OrderService.Infrastructure\\Repositories",
+    "\\OrderService.Infrastructure\\Repositories\\Entities",
+    "\\OrderService.Shared",
+    "\\OrderService.Shared\\Dtos",
+    "\\OrderService.Shared\\Dtos\\OrderDtos",
+    "\\OrderService.Shared\\Protos"
+  ],
+  "SelectedNode": "\\OrderService.Api\\Controllers\\OrdersController.cs",
+  "PreviewInSolutionExplorer": false
+}

@@ -28,12 +28,40 @@ public class OrderRepository(OrderDbContext context) : Repository<Order>(context
             Include = query => query.Include(o => o.OrderItems.Where(op => op.ShopId == shopId))
         });
     }
-    
-    public async Task<IEnumerable<Order>> GetAllUserOrdersAsync(Guid userId) =>
-        await Entities
-            .Where(o => o.UserId == userId && o.Status != OrderStatus.PaymentFailed && o.Status != OrderStatus.Pending)
+
+    public async Task<IEnumerable<Order>> GetAllUserOrdersAsync(Guid userId, int page, int limit)
+    {
+        if (page <= 0) page = 1;
+        if (limit <= 0) limit = 10;
+
+        var skip = (page - 1) * limit;
+
+        return await Entities
+            .Where(o => o.UserId == userId
+                        && o.Status != OrderStatus.PaymentFailed
+                        && o.Status != OrderStatus.Pending)
             .Include(o => o.OrderItems)
+            .OrderByDescending(o => o.OrderDate)
+            .Skip(skip)
+            .Take(limit)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Order>> GetAllPaginatedAsync(int page, int limit)
+    {
+        if (page <= 0) page = 1;
+        if (limit <= 0) limit = 10;
+
+        var skip = (page - 1) * limit;
+
+        return await Entities
+            .Include(o => o.OrderItems)
+            .OrderByDescending(o => o.OrderDate)
+            .Skip(skip)
+            .Take(limit)
+            .ToListAsync();
+    }
+
 
     public async Task<IEnumerable<Order>> GetAllOrdersByDate(DateTime startDate, DateTime endDate, Func<IQueryable<Order>, IQueryable<Order>>? additionalQuery = null)
     {

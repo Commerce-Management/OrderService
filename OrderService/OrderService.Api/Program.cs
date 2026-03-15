@@ -122,8 +122,10 @@ builder.Services.AddAuthentication(options =>
 
                 if (!string.IsNullOrEmpty(refreshToken))
                 {
-                    var refreshEndpoint =
-                        $"{httpContext.Request.Scheme}://{httpContext.Request.Host}/api/v1/Auth/Refresh";
+                    var identityBaseUrl = context.HttpContext.RequestServices
+                        .GetRequiredService<IConfiguration>()["Identity:BaseUrl"];
+                        
+                    var refreshEndpoint = $"{identityBaseUrl}/api/v1/Auth/Refresh";
                     var client = httpContext.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient();
 
                     var response =
@@ -163,9 +165,9 @@ builder.Services.AddControllers();
 //Cookie
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
     options.HttpOnly = HttpOnlyPolicy.Always;
-    options.Secure = CookieSecurePolicy.Always;
+    options.Secure = CookieSecurePolicy.None;
 });
 
 builder.Services.AddHttpClient("MyClient");

@@ -25,7 +25,7 @@ public class OrderStatusUpdatedEmail : IOrderStatusUpdatedEmail
 
         var template = File.ReadAllText(templatePath);
 
-        // ---- gRPC: Получаем данные продуктов ----
+      
         var productIds = order.OrderItems
             .Select(i => i.ProductId)
             .Distinct()
@@ -40,7 +40,7 @@ public class OrderStatusUpdatedEmail : IOrderStatusUpdatedEmail
             .Where(p => Guid.TryParse(p.Id, out _))
             .ToDictionary(p => Guid.Parse(p.Id), p => p);
 
-        // ---- Формируем HTML для позиций ----
+       
         var orderItemsHtml = new StringBuilder();
 
         foreach (var item in order.OrderItems)
@@ -59,7 +59,7 @@ public class OrderStatusUpdatedEmail : IOrderStatusUpdatedEmail
                 </tr>");
         }
 
-        // ---- Заполняем шаблон ----
+       
         return template
             .Replace("{CustomerName}", customerName)
             .Replace("{OrderNumber}", order.TrackingId)

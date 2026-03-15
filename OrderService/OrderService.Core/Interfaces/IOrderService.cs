@@ -7,8 +7,8 @@ namespace OrderService.Core.Interfaces;
 
 public interface IOrderService
 {
-    public Task<IEnumerable<GetOrderDto>> GetAllOrders();
-    public Task<IEnumerable<GetOrderDto>> GetAllUserOrdersAsync(Guid userId);
+    public Task<IEnumerable<GetOrderDto>> GetAllOrders(int page, int limit);
+    public Task<IEnumerable<GetOrderDto>> GetAllUserOrdersAsync(Guid userId, int page, int limit);
     public Task<IEnumerable<GetOrderShopDto>> GetAllShopOrders(Guid shopId, int page, int limit);
     public Task<GetOrderDto?> GetOrderByIdAsync(Guid id);
     public Task<GetOrderDto?> GetOrderByTrackingNumberAsync(string trackingNumber);

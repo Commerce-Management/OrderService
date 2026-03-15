@@ -1,0 +1,41 @@
+﻿<tr>
+    <td style="padding: 30px;">
+        <table style="width: 100%;">
+            <tr>
+                <td style="text-align: center; padding-bottom: 20px;">
+                    <img src="https://ik.imagekit.io/cxhp0pbc9v/compressed.png?updatedAt=1740829408974" alt="BA-Logo" width="100" style="display: block; margin: 0 auto;">
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-bottom: 20px;">
+                    <h1 style="color: #233D4C; font-size: 24px; margin: 0; text-align: center;">Order Status Update</h1>
+                </td>
+            </tr>
+            <tr>
+                <td style="color: #555555; font-size: 16px; line-height: 1.5;">
+                    <p>Dear {CustomerName},</p>
+                    <p>We wanted to let you know that the status of your order has been updated.</p>
+                    <h2 style="color: #233D4C; font-size: 18px;">Order Details:</h2>
+                    <p><strong>Order Number:</strong> {OrderNumber}</p>
+                    <p><strong>Order Date:</strong> {OrderDate}</p>
+                    <p><strong>Current Status:</strong> {OrderStatus}</p>
+                    <p><strong>Status Updated On:</strong> {StatusUpdateDate}</p>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tr style="background-color: #233D4C; color: #ffffff;">
+                            <th style="padding: 10px; text-align: left;">Item</th>
+                            <th style="padding: 10px; text-align: right;">Quantity</th>
+                            <th style="padding: 10px; text-align: right;">Price</th>
+                        </tr>
+                        {OrderItems}
+                    </table>
+                    <p><strong>Total:</strong> {TotalAmount}</p>
+                    <h2 style="color: #233D4C; font-size: 18px;">Shipping Information:</h2>
+                    <p>{ShippingAddress}</p>
+                    <p>If you have any questions about your order, please contact our customer service team at <a href="mailto:support@babayeva-bags.com" style="color: #233D4C; text-decoration: none;">support@babayeva-bags.com</a>.</p>
+                    <p>Thank you for choosing Babayeva Bags!</p>
+                    <p>Best regards,<br>The BA Team</p>
+                </td>
+            </tr>
+        </table>
+    </td>
+</tr>
